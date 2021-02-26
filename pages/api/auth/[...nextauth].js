@@ -47,7 +47,7 @@ export default NextAuth({
   // Notes:
   // * You must to install an appropriate node_module for your database
   // * The Email provider requires a database (OAuth providers do not)
-  database: process.env.DATABASE_URL,
+  // database: process.env.DATABASE_URL,
 
   // The secret should be set to a reasonably long random string.
   // It is used to sign cookies and to sign and encrypt JSON Web Tokens, unless
@@ -101,8 +101,20 @@ export default NextAuth({
   callbacks: {
     // async signIn(user, account, profile) { return true },
     // async redirect(url, baseUrl) { return baseUrl },
-    // async session(session, user) { return session },
-    // async jwt(token, user, account, profile, isNewUser) { return token }
+    async session(session, user) { return session },
+    async jwt(token, user, account, profile, isNewUser) { 
+      if(user) {
+        return {
+          ...token,
+          modifiedCount: 0
+        }
+      }
+      console.log(token)
+      return {
+        ...token,
+        modifiedCount: token.modifiedCount + 1,
+      }
+    }
   },
 
   // Events are useful for logging
