@@ -74,7 +74,7 @@ export default NextAuth({
   // https://next-auth.js.org/configuration/options#jwt
   jwt: {
     // A secret to use for key generation (you should set this explicitly)
-    // secret: 'INp8IvdIyeMcoGAgFGoA61DdBglwwSqnXJZkgz8PSnw',
+    secret: process.env.JWT_SECRET,
     // Set to true to use encryption (default: false)
     // encryption: true,
     // You can define your own encode/decode functions for signing and encryption
@@ -101,11 +101,24 @@ export default NextAuth({
   callbacks: {
     // async signIn(user, account, profile) { return true },
     // async redirect(url, baseUrl) { return baseUrl },
-    async session(session, user) { return session },
-    async jwt(token, user, account, profile, isNewUser) { 
+    async session(session, token) { 
+      if (token) {
+        if(token.persistToken) {
+            delete token.persistToken
+            session.newToken = token
+        }
+        session = {
+            ...session,
+            user: token.user,
+        };
+      }
+      return session;
+    },
+    async jwt(token, user) {
       if(user) {
         return {
           ...token,
+          user,
           modifiedCount: 0
         }
       }
